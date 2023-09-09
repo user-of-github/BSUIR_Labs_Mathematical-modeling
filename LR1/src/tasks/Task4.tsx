@@ -78,6 +78,7 @@ export const Task4 = (): JSX.Element => {
                     type="text"
                     onChange={onProbabilitiesInputChange}
                     value={probabilities}
+                    placeholder="Введите события, обр. полную группу"
                 />
 
                 <button

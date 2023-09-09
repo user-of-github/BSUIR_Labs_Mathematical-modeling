@@ -1,8 +1,8 @@
 import React from 'react';
 
-export const Task = ({children}: React.PropsWithChildren<object>): JSX.Element => {
+export const TaskLayoutContainer = ({children}: React.PropsWithChildren<object>): JSX.Element => {
     return (
-      <section className="flex flex-col justify-start border-fuchsia-200 border p-1">
+      <section className="flex flex-col justify-start border-fuchsia-200 border p-1 max-h-screen">
           {children}
       </section>
     );
