@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { RandomGenerator } from './random';
 
 interface Donation {
     title: string;
@@ -8,8 +9,9 @@ interface Donation {
 
 type GeneratorType = () => number;
 const getGenerator = (probabilitiesGroup: number[]): GeneratorType => {
+    const gen = new RandomGenerator(41222);
     return (): number => {
-        const random = Math.random();
+        const random = gen.random();
         let sum = 0;
 
         for (let index = 0; index < probabilitiesGroup.length; ++index) {
@@ -39,16 +41,31 @@ export const Task5 = (): JSX.Element => {
             amount: Number(amountInput.current?.value),
             id: `${new Date().getTime()}${Math.random() * 1_000_000}`
         };
-        if (!donations.find(i => i.title === newItem.title)) {
+        const index = donations.findIndex(i => i.title === newItem.title);
+        if (index === -1) {
             setDonations(previous => [...previous, newItem]);
+        } else {
+            const item = {...donations[index]};
+            item.amount += Number(amountInput.current?.value);
+            const arr = [...donations.slice(0, index), item, ...donations.slice(index + 1)];
+            setDonations(() => arr);
         }
     };
 
     const onRemoveAll = () => setDonations(() => []);
 
     const spin = () => {
+        const expected = donations.map(d => d.amount / sum);
         const generator = getGenerator(donations.map(d => d.amount / sum));
-        window.alert(donations[generator()].title);
+        const arr = new Array(expected.length).fill(0);
+        for (let counter = 0; counter < 100000; ++counter) {
+            ++arr[generator()];
+        }
+
+        for (let counter = 0; counter < arr.length; ++counter) {
+            arr[counter] /= 100000;
+        }
+        window.alert(JSON.stringify(expected) + '\n' + JSON.stringify(arr));
     };
 
     useEffect(() => {

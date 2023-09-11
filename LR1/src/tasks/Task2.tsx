@@ -1,14 +1,17 @@
 import { ChangeEvent, useState } from 'react';
+import { RandomGenerator } from './random';
 
 
 const EVENTS_COUNT = 1_000_000;
 
 type GeneratorType = () => boolean[];
 const getGenerator = (probabilities: number[]): GeneratorType => {
+    const generator = new RandomGenerator(10000);
+
     return (): boolean[] => {
         return new Array(probabilities.length)
             .fill(null)
-            .map(() => Math.random())
+            .map(() => generator.random())
             .map((event, index): boolean => {
                 return event <= probabilities[index];
             });

@@ -1,12 +1,13 @@
 import { ChangeEvent, useState } from 'react';
+import { RandomGenerator } from './random';
 
 
 type GeneratorType = () => boolean;
 
 const getGenerator = (probability: number): GeneratorType => {
+    const generator = new RandomGenerator(2023);
     return (): boolean => {
-        const random = Math.random();
-        return random <= probability;
+        return generator.random() <= probability;
     };
 };
 

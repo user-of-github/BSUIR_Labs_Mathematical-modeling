@@ -1,10 +1,12 @@
 import { ChangeEvent, useState } from 'react';
+import { RandomGenerator } from './random';
 
 type GeneratorType = () => number;
 
 const getGenerator = (probabilitiesGroup: number[]): GeneratorType => {
+    const generator = new RandomGenerator(5);
     return (): number => {
-        const random = Math.random();
+        const random = generator.random();
         let sum = 0;
 
         for (let index = 0; index < probabilitiesGroup.length; ++index) {
@@ -64,7 +66,7 @@ export const Task4 = (): JSX.Element => {
         let response = '';
 
         for (let index = 0; index < length; ++index)
-            response += `${index}: ${(real[index] / EVENTS_COUNT).toFixed(4)}\n`;
+            response += `${index}: ${(real[index] / EVENTS_COUNT).toFixed(6)}\n`;
 
         setGeneratedValues(response);
     };

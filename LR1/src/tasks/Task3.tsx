@@ -1,20 +1,21 @@
 import { ChangeEvent, useState } from 'react';
+import { RandomGenerator } from './random';
 
 type GeneratorType = () => number;
 
 const getGenerator = (PA: number, PBA: number): [GeneratorType, number[]] => {
-    const P_NOTA = 1 - PA;
-
-    const PNOTA_B = 1 - PBA; // 3
 
     const P_AB = PA * PBA; // P(AB)
     const PA_NOTB = PA - P_AB; // 2
-    const P_NOTA_NOTB = P_NOTA - PA_NOTB; // P(!A!B)
+
+    const PNOTA_B = (1 - PA) * (1 - PBA); // 3
+    const P_NOTA_NOTB = (1 - PA) - PNOTA_B; // P(!A!B)
 
     const steps = [P_AB, PA_NOTB, PNOTA_B, P_NOTA_NOTB];
 
+    const generator = new RandomGenerator(123);
     return [() => {
-        const random = Math.random();
+        const random = generator.random();
 
         let sum = 0;
 
