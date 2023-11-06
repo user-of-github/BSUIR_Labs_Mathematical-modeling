@@ -1,20 +1,18 @@
 import time
-import numpy as np
-from math import log
-from statistics import  mean
+import numpy
+import math
+import statistics
 
 
 TIME_INTERVAL: float = 0.01
 
 
 class QueueingSystem:
-    def __init__(self, m: int, lambda_: float, mu: float, n=1, p=1):
-        self.number_of_channels = n
+    def __init__(self, m: int, lambda_: float, mu: float):
         self.queue_size = m
         self.request_intensity = lambda_
         self.service_intensity = mu
         self.main_channel_status = None
-        self.probability_to_serve_the_request = p
         self.request_number = 0
         self.queue = list()
         self.current_time = 0.00
@@ -27,24 +25,23 @@ class QueueingSystem:
         self.channels_state = []
         self.queue_state = []
 
-    def run_simulation(self, run_life_time: float):
+    def run_simulation(self, run_life_time: float) -> None:
         self.create_new_request()
         time_for_new_request = self.request_time_generator() + self.current_time
 
-        # Пока время работы СМО не закончилось
         while self.current_time <= run_life_time:
             self.current_time += TIME_INTERVAL
             time.sleep(TIME_INTERVAL)
             self.process_queue()
             self.process_channels()
 
-            self.get_statistic()
+            self.commit_statistics()
 
             if time_for_new_request <= self.current_time:
                 self.create_new_request()
                 time_for_new_request = self.request_time_generator() + self.current_time
 
-    def create_new_request(self):
+    def create_new_request(self) -> None:
         """ Создаст новую заявку, если есть места в очереди. Иначе заявка будет отклонена """
         self.request_number += 1
         print(f'🔔 NEW REQUEST {self.request_number}')
@@ -59,7 +56,7 @@ class QueueingSystem:
             self.rejected_requests.append(request_id)
             print(f'❌ Request {request_id} denied. Current queue: {self.queue}')
 
-    def process_queue(self):
+    def process_queue(self) -> None:
         """ Выполняет одну итерацию по очереди """
         is_channel_free: bool = self.main_channel_status is None
 
@@ -75,39 +72,36 @@ class QueueingSystem:
         time_in_queue = self.current_time - start_time
         self.serve_request(request_id, start_time, time_in_queue)
 
-    def process_channels(self):
+    def process_channels(self) -> None:
         """ Принимает заявку при наличии времени """
         if self.main_channel_status is None:
             return
-
-        #print(main_channel_status, current_time)
+        # TODO: fix
+        print(self.main_channel_status, self.current_time)
         if self.main_channel_status[4] <= self.current_time:
             self.accept_request(self.main_channel_status)
 
-    def serve_request(self, request_id, start_time, time_in_queue):
-        """ Добавляет заявку на место пустого канала """
+    def serve_request(self, request_id, start_time, time_in_queue) -> None:
+        # Ставлю заявку на место пустого канала
         serve_time: float = self.serve_time_generator()
         end_time: float = serve_time + self.current_time
         self.main_channel_status = (request_id, start_time, time_in_queue, serve_time, end_time)
 
-    def accept_request(self, request):
+    def accept_request(self, request) -> None:
         self.main_channel_status = None  # канал свободен
         time_in_queuing_system = self.current_time - request[1]
         self.done_requests.append((request[0], request[2], request[3], time_in_queuing_system))
         print(f'✅ Request {request[0]} completed')
 
-    def get_statistic(self):
+    def commit_statistics(self) -> None:
         n = 1
-        # Количество каналов - количество пустых каналов + длина очереди
         temp = 1 if self.main_channel_status == 1 else 0
         self.channels_and_queue_state.append(n - temp + len(self.queue))
-        # Количество каналов - количество пустых каналов
         self.channels_state.append(n - temp)
-        # Длина очереди
         self.queue_state.append(len(self.queue))
 
-    def get_final_probabilities(self):
-        final_probabilities: list = list()
+    def count_final_probabilities(self) -> list[float]:
+        final_probabilities: list[float] = list()
 
         n: int = 1
         m: int = self.queue_size
@@ -120,46 +114,45 @@ class QueueingSystem:
 
         return final_probabilities
 
-    def get_average_service_request_time(self):
-        """ Возвращает среднее время затраченное на обработку заявки """
+    def get_average_service_request_time(self) -> float:
+        # Среднее время затраченное на обработку заявки
         average_service_request_time: list = list()
 
         for i in range(len(self.done_requests)):
             average_service_request_time.append(self.done_requests[i][2])
 
-        return mean(average_service_request_time)
+        return statistics.mean(average_service_request_time)
 
-    def get_average_queue_time(self):
-        """ Возвращает среднее время, которое заявка была в очереди """
+    def get_average_queue_time(self) -> float:
+        # Среднее время, которое заявка была в очереди
         average_queue_time = []
 
         for i in range(len(self.done_requests)):
             average_queue_time.append(self.done_requests[i][1])
 
-        return mean(average_queue_time)
+        return statistics.mean(average_queue_time)
 
-    def get_average_request_time_in_system(self):
-        """ Возвращает среднее время заявки в системе """
+    def get_average_request_time_in_system(self) -> float:
+        # Среднее время заявки в системе
         average_request_time_in_system = []
 
         for i in range(len(self.done_requests)):
             average_request_time_in_system.append(self.done_requests[i][3])
 
-        return mean(average_request_time_in_system)
+        return statistics.mean(average_request_time_in_system)
 
-    def show_statistic(self):
-        """ Отображает полученные данные за время работы системы массового обслуживания """
-        final_probabilities = self.get_final_probabilities()
+    def print_statistics(self) -> None:
+        final_probabilities = self.count_final_probabilities()
         probability_of_idle_channels = final_probabilities[0]
         denial_of_service_probability = final_probabilities[-1]
         # Относительная пропускная способность - среднее число обслуженных заявок / среднее число поступивших заявок
-        # за одно и тоже время
+        # за одно и то же время
         relative_bandwidth = 1 - denial_of_service_probability
-        # Абсолютная пропускная способность - среднее число заявок, которео может обслужить СМО за единицу времени
+        # Абсолютная пропускная способность - среднее число заявок, которое может обслужить СМО за единицу времени
         absolute_bandwidth = self.request_intensity * relative_bandwidth
-        average_channel_usage = mean(self.channels_state)
-        average_number_of_request_in_queue = mean(self.queue_state)
-        average_number_of_request_in_system = mean(self.channels_and_queue_state)
+        average_channel_usage = statistics.mean(self.channels_state)
+        average_number_of_request_in_queue = statistics.mean(self.queue_state)
+        average_number_of_request_in_system = statistics.mean(self.channels_and_queue_state)
         average_service_request_time = self.get_average_service_request_time()
         average_queue_time = self.get_average_queue_time()
         average_request_time_in_system = self.get_average_request_time_in_system()
@@ -178,14 +171,14 @@ class QueueingSystem:
         print(f'Среднее время заявки в системе: {average_request_time_in_system}')
         print()
 
-    def request_time_generator(self):
-        """ Возвращает время, затраченное на ожидание заявки в очереди """
+    def request_time_generator(self) -> float:
+        # Время, затраченное на ожидание заявки в очереди
         return exponential_value_generator(self.request_intensity)
 
-    def serve_time_generator(self):
-        """ Возвращает время, затраченное на исполнение заявки """
+    def serve_time_generator(self) -> float:
+        # Время, затраченное на исполнение заявки
         return exponential_value_generator(self.service_intensity)
 
 
-def exponential_value_generator(intensity):
-    return - 1 / intensity * log(1 - np.random.uniform())
+def exponential_value_generator(intensity) -> float:
+    return - 1 / intensity * math.log(1 - numpy.random.uniform())

@@ -14,7 +14,7 @@ def main() -> None:
     queueing_system.run_simulation(virtual_simulation_time)
 
     print('----------------------- FINISH -----------------------------')
-    queueing_system.show_statistic()
+    queueing_system.print_statistics()
 
 
 if __name__ == '__main__':
