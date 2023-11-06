@@ -77,7 +77,7 @@ class QueueingSystem:
         if self.main_channel_status is None:
             return
         # TODO: fix
-        print(self.main_channel_status, self.current_time)
+        #print(self.main_channel_status, self.current_time)
         if self.main_channel_status[4] <= self.current_time:
             self.accept_request(self.main_channel_status)
 
@@ -116,7 +116,7 @@ class QueueingSystem:
 
     def get_average_service_request_time(self) -> float:
         # Среднее время затраченное на обработку заявки
-        average_service_request_time: list = list()
+        average_service_request_time: list[float] = list()
 
         for i in range(len(self.done_requests)):
             average_service_request_time.append(self.done_requests[i][2])
@@ -125,7 +125,7 @@ class QueueingSystem:
 
     def get_average_queue_time(self) -> float:
         # Среднее время, которое заявка была в очереди
-        average_queue_time = []
+        average_queue_time: list[float] = list()
 
         for i in range(len(self.done_requests)):
             average_queue_time.append(self.done_requests[i][1])
@@ -134,7 +134,7 @@ class QueueingSystem:
 
     def get_average_request_time_in_system(self) -> float:
         # Среднее время заявки в системе
-        average_request_time_in_system = []
+        average_request_time_in_system: list[float] = list()
 
         for i in range(len(self.done_requests)):
             average_request_time_in_system.append(self.done_requests[i][3])
@@ -142,25 +142,25 @@ class QueueingSystem:
         return statistics.mean(average_request_time_in_system)
 
     def print_statistics(self) -> None:
-        final_probabilities = self.count_final_probabilities()
-        probability_of_idle_channels = final_probabilities[0]
-        denial_of_service_probability = final_probabilities[-1]
+        final_probabilities: list[float] = self.count_final_probabilities()
+        probability_of_idle_channels: float = final_probabilities[0]
+        denial_of_service_probability: float = final_probabilities[-1]
         # Относительная пропускная способность - среднее число обслуженных заявок / среднее число поступивших заявок
         # за одно и то же время
-        relative_bandwidth = 1 - denial_of_service_probability
+        relative_bandwidth: float = 1 - denial_of_service_probability
         # Абсолютная пропускная способность - среднее число заявок, которое может обслужить СМО за единицу времени
-        absolute_bandwidth = self.request_intensity * relative_bandwidth
-        average_channel_usage = statistics.mean(self.channels_state)
-        average_number_of_request_in_queue = statistics.mean(self.queue_state)
-        average_number_of_request_in_system = statistics.mean(self.channels_and_queue_state)
-        average_service_request_time = self.get_average_service_request_time()
-        average_queue_time = self.get_average_queue_time()
-        average_request_time_in_system = self.get_average_request_time_in_system()
-        print('Одноканальная СМО')
-        print(f'Характеристики для очереди размером: {self.queue_size}')
+        absolute_bandwidth: float = self.request_intensity * relative_bandwidth
+        average_channel_usage: float = statistics.mean(self.channels_state)
+        average_number_of_request_in_queue: float = statistics.mean(self.queue_state)
+        average_number_of_request_in_system: float = statistics.mean(self.channels_and_queue_state)
+        average_service_request_time: float = self.get_average_service_request_time()
+        average_queue_time: float = self.get_average_queue_time()
+        average_request_time_in_system: float = self.get_average_request_time_in_system()
+
+        print(f'Одноканальная СМО, размер очереди: {self.queue_size}')
         print(f'Финальные вероятности: {final_probabilities}')
         print(f'Вероятность простоя каналов: {probability_of_idle_channels}')
-        print(f'Вероятность отказа обсуживания: {denial_of_service_probability} ')
+        print(f'Вероятность отказа обслуживания: {denial_of_service_probability} ')
         print(f'Относительная пропускная способность: {relative_bandwidth}')
         print(f'Абсолютная пропускная способность: {absolute_bandwidth}')
         print(f'Среднее число занятых каналов: {average_channel_usage}')
@@ -169,7 +169,6 @@ class QueueingSystem:
         print(f'Среднее время заявки под обслуживанием: {average_service_request_time}')
         print(f'Среднее время заявки в очереди: {average_queue_time}')
         print(f'Среднее время заявки в системе: {average_request_time_in_system}')
-        print()
 
     def request_time_generator(self) -> float:
         # Время, затраченное на ожидание заявки в очереди
