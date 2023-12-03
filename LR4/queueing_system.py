@@ -42,7 +42,7 @@ class QueueingSystem:
                 time_for_new_request = self.request_time_generator() + self.current_time
 
     def create_new_request(self) -> None:
-        """ Создаст новую заявку, если есть места в очереди. Иначе заявка будет отклонена """
+        # Создаст новую заявку, если есть места в очереди
         self.request_number += 1
         print(f'🔔 NEW REQUEST {self.request_number}')
 
@@ -57,7 +57,7 @@ class QueueingSystem:
             print(f'❌ Request {request_id} denied. Current queue: {self.queue}')
 
     def process_queue(self) -> None:
-        """ Выполняет одну итерацию по очереди """
+        # Выполняет одну итерацию по очереди
         is_channel_free: bool = self.main_channel_status is None
 
         # Если очередь пуста выходим из функции
@@ -73,11 +73,11 @@ class QueueingSystem:
         self.serve_request(request_id, start_time, time_in_queue)
 
     def process_channels(self) -> None:
-        """ Принимает заявку при наличии времени """
+        # Канал свободен ===> акспетим
         if self.main_channel_status is None:
             return
         # TODO: fix
-        #print(self.main_channel_status, self.current_time)
+        # print(self.main_channel_status, self.current_time)
         if self.main_channel_status[4] <= self.current_time:
             self.accept_request(self.main_channel_status)
 
@@ -88,7 +88,7 @@ class QueueingSystem:
         self.main_channel_status = (request_id, start_time, time_in_queue, serve_time, end_time)
 
     def accept_request(self, request) -> None:
-        self.main_channel_status = None  # канал свободен
+        self.main_channel_status = None  # отныне канал свободен (ну по крайней мере, до сл. заявки)
         time_in_queuing_system = self.current_time - request[1]
         self.done_requests.append((request[0], request[2], request[3], time_in_queuing_system))
         print(f'✅ Request {request[0]} completed')
@@ -150,20 +150,18 @@ class QueueingSystem:
         relative_bandwidth: float = 1 - denial_of_service_probability
         # Абсолютная пропускная способность - среднее число заявок, которое может обслужить СМО за единицу времени
         absolute_bandwidth: float = self.request_intensity * relative_bandwidth
-        average_channel_usage: float = statistics.mean(self.channels_state)
         average_number_of_request_in_queue: float = statistics.mean(self.queue_state)
         average_number_of_request_in_system: float = statistics.mean(self.channels_and_queue_state)
         average_service_request_time: float = self.get_average_service_request_time()
         average_queue_time: float = self.get_average_queue_time()
         average_request_time_in_system: float = self.get_average_request_time_in_system()
 
-        print(f'Одноканальная СМО, размер очереди: {self.queue_size}')
+
         print(f'Финальные вероятности: {final_probabilities}')
         print(f'Вероятность простоя каналов: {probability_of_idle_channels}')
         print(f'Вероятность отказа обслуживания: {denial_of_service_probability} ')
         print(f'Относительная пропускная способность: {relative_bandwidth}')
         print(f'Абсолютная пропускная способность: {absolute_bandwidth}')
-        print(f'Среднее число занятых каналов: {average_channel_usage}')
         print(f'Среднее число заявок в очереди: {average_number_of_request_in_queue}')
         print(f'Среднее число заявок в системе: {average_number_of_request_in_system}')
         print(f'Среднее время заявки под обслуживанием: {average_service_request_time}')

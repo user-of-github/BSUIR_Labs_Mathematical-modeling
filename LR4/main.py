@@ -4,6 +4,7 @@ from data import queue_length, intensity_of_service_of_applications_per_hour, in
 
 def main() -> None:
     virtual_simulation_time: float = 10
+    print(f'Одноканальная СМО, размер очереди: {queue_length}')
 
     queueing_system: QueueingSystem = QueueingSystem(
         queue_length,
